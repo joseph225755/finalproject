@@ -2,6 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
 import authRoutes from './routes/authRoutes.js';
 import internshipRoutes from './routes/internshipRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
@@ -16,10 +20,17 @@ import { isDbConnected } from './config/db.js';
 
 dotenv.config();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 
-// Security HTTP headers
-app.use(helmet());
+// Security HTTP headers (CSP set to false to allow SPA styles and fonts)
+app.use(
+  helmet({
+    contentSecurityPolicy: false
+  })
+);
 
 // CORS Configuration with explicit allowed origin
 const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
@@ -33,7 +44,7 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, Postman)
+      // Allow requests with no origin (like mobile apps, curl, Postman, same-origin)
       if (!origin) return callback(null, true);
       if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
         callback(null, true);
@@ -72,6 +83,19 @@ app.use('/api/milestones', milestoneRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/admin', adminRoutes);
+
+// Serve static React client in production if built
+const clientDistPath = path.resolve(__dirname, '../../client/dist');
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+
+  app.get('*', (req, res, next) => {
+    if (req.originalUrl.startsWith('/api')) {
+      return next();
+    }
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+}
 
 // 404 Route Handler for undefined endpoints
 app.use('*', (req, res) => {
