@@ -264,8 +264,8 @@ Final project/
 ### 1. Clone & Install Dependencies
 ```bash
 # Clone the repository
-git clone <repository_url>
-cd interntrack-mern
+git clone https://github.com/joseph225755/finalproject.git
+cd finalproject
 
 # Install both backend and frontend dependencies
 npm run install:all
