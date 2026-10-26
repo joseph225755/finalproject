@@ -318,7 +318,10 @@ npm --prefix client run dev
 
 ---
 
-## 10. Demo Credentials (For Evaluation)
+## 10. Live Deployment & Demo Credentials
+
+* **Live Deployment URL:** [https://finalproject-iub2.onrender.com](https://finalproject-iub2.onrender.com)
+* **GitHub Repository:** [https://github.com/joseph225755/finalproject](https://github.com/joseph225755/finalproject)
 
 | Role | Email | Password | Access Capabilities |
 | :--- | :--- | :--- | :--- |

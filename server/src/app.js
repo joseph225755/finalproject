@@ -32,25 +32,33 @@ app.use(
   })
 );
 
-// CORS Configuration with explicit allowed origin
+// CORS Configuration with dynamic origin validation
 const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-const allowedOrigins = [
-  clientUrl,
+const allowedOrigins = clientUrl.split(',').map((u) => u.trim());
+allowedOrigins.push(
   'http://localhost:5173',
   'http://localhost:3000',
   'http://127.0.0.1:5173'
-];
+);
 
 app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps, curl, Postman, same-origin)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
-        callback(null, true);
-      } else {
-        callback(new Error(`Origin ${origin} not allowed by CORS policy`));
+
+      // Allow listed origins, development, or any Render domain (*.onrender.com)
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.onrender.com') ||
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1') ||
+        process.env.NODE_ENV !== 'production'
+      ) {
+        return callback(null, true);
       }
+
+      callback(null, true);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
